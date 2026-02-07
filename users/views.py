@@ -8,9 +8,9 @@ from .serializers import UserSerializer, PatientProfileSerializer
 
 class OTPRequestAPIView(APIView):
     def post(self, request):
-        phone_number = request.data.get('phone_number')
+        phone_number = request.data.get('phone_number') or request.data.get('mobile')
         if not phone_number:
-            return Response({"error": "شماره موبایل الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "شماره موبایل الزامی است"}, status=400)
         return Response({"message": "کد تایید ارسال شد", "test_code": "1234"}, status=status.HTTP_200_OK)
 
 

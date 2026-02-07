@@ -13,4 +13,17 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
-        fields = ['id', 'patient', 'patient_phone', 'slot', 'slot_detail', 'source', 'status', 'booking_type', 'is_paid']
+        fields = ['id', 'patient', 'slot', 'source', 'status', 'booking_type', 'is_paid', 'visit_reason']
+        
+        
+from jalali_date import date2jalali
+
+class TimeSlotSerializer(serializers.ModelSerializer):
+    jalali_date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TimeSlot
+        fields = ['id', 'date', 'jalali_date', 'start_time', 'is_blocked']
+
+    def get_jalali_date(self, obj):
+        return date2jalali(obj.date).strftime('%Y/%m/%d')

@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Consultation(models.Model):
     STATUS_CHOICES = [('pending', 'در انتظار پاسخ'), ('answered', 'پاسخ داده شده')]
-
+    attachment = models.FileField(upload_to='consultation_files/', null=True, blank=True, verbose_name="فایل ضمیمه")
     patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions')
     subject = models.CharField(max_length=200, verbose_name="موضوع")
     question_text = models.TextField(verbose_name="متن سوال")

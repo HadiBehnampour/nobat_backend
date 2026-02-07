@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 # کتابخانه‌های جانبی (اگر نصب دارید)
     'rest_framework',
     'corsheaders',
+    'django_jalali',
 ]
 
 MIDDLEWARE = [
@@ -143,3 +144,19 @@ AUTH_USER_MODEL = 'users.User'
 
 # اجازه دسترسی به تمامی مبداها (فقط برای زمان توسعه)
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# تنظیمات پیش‌فرض برای کتابخانه تاریخ شمسی
+JALALI_DATE_DEFAULTS = {
+   'Strftime': {
+        'date': '%y/%m/%d',
+        'datetime': '%H:%M:%S - %y/%m/%d',
+    },
+    'Static': {
+        'js': [
+            # این بخش برای تقویم‌های گرافیکی در پنل ادمین است
+            'admin/js/django_jalali.js',
+        ],
+        'css': dict(all=['admin/css/django_jalali.css'])
+    },
+}
