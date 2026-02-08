@@ -16,6 +16,7 @@ class TimeSlot(models.Model):
         # جلوگیری از ایجاد نوبت تکراری در یک زمان خاص
         unique_together = ['date', 'start_time']
 
+
     def __str__(self):
         # نمایش تاریخ شمسی در پنل ادمین
         return f"{self.date} - {self.start_time}"
