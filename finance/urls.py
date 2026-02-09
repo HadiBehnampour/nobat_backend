@@ -1,8 +1,16 @@
 from django.urls import path
-from .views import TransactionListAPIView, FinanceExcelExportAPIView, ServiceManagerAPIView
+from .views import (
+    TransactionListAPIView,
+    TransactionDetailAPIView,
+    ServiceListAPIView,
+    FinanceStatsAPIView,
+)
+
+app_name = 'finance'
 
 urlpatterns = [
-    path('transactions/', TransactionListAPIView.as_view(), name='transactions'),
-    path('export/', FinanceExcelExportAPIView.as_view(), name='finance_export'),
-    path('services/', ServiceManagerAPIView.as_view(), name='service_manager'),
+    path('transactions/', TransactionListAPIView.as_view(), name='transaction_list'),
+    path('transactions/<int:pk>/', TransactionDetailAPIView.as_view(), name='transaction_detail'),
+    path('services/', ServiceListAPIView.as_view(), name='service_list'),
+    path('stats/', FinanceStatsAPIView.as_view(), name='finance_stats'),
 ]

@@ -3,20 +3,21 @@ from django.conf import settings
 
 
 class MedicalRecord(models.Model):
-    patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='medical_records')
+    """مدل رکورد پزشکی"""
+    patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='medical_records', verbose_name="بیمار")
     doctor_notes = models.TextField(verbose_name="یادداشت پزشک")
     prescription = models.TextField(verbose_name="نسخه", null=True, blank=True)
-
-    # فیلدهای مربوط به BMI
     weight = models.FloatField(verbose_name="وزن (کیلوگرم)")
     height = models.FloatField(verbose_name="قد (سانتی‌متر)")
     bmi = models.FloatField(null=True, blank=True, verbose_name="شاخص توده بدنی")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        verbose_name = "رکورد پزشکی"
+        verbose_name_plural = "رکوردهای پزشکی"
+        ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
-        # محاسبه BMI قبل از ذخیره در دیتابیس
-        # فرمول: وزن تقسیم بر (قد به توان دو) - قد به متر تبدیل می‌شود
         if self.weight and self.height:
             height_in_meters = self.height / 100
             self.bmi = round(self.weight / (height_in_meters ** 2), 2)

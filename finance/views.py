@@ -1,53 +1,69 @@
-import pandas as pd
-import io
-from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Sum, Q
 from .models import Transaction, Service
 from .serializers import TransactionSerializer, ServiceSerializer
 
 
 class TransactionListAPIView(APIView):
-    """لیست تمام تراکنش‌ها برای پنل مدیریت"""
+    """لیست تراکنش‌ها"""
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        transactions = Transaction.objects.all().order_by('-created_at')
+        if request.user.is_doctor or request.user.is_secretary:
+            transactions = Transaction.objects.all().order_by('-created_at')
+        else:
+            transactions = Transaction.objects.filter(patient=request.user).order_by('-created_at')
+
         serializer = TransactionSerializer(transactions, many=True)
         return Response(serializer.data)
 
 
-class FinanceExcelExportAPIView(APIView):
-    """خروجی اکسل بدون ارور بصری"""
+class TransactionDetailAPIView(APIView):
+    """جزئیات تراکنش"""
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        data = Transaction.objects.all().values(
-            'patient__phone_number', 'service__name', 'amount', 'status', 'created_at'
-        )
-        df = pd.DataFrame(list(data))
+    def get(self, request, pk):
+        transaction = Transaction.objects.get(pk=pk)
+        if transaction.patient != request.user and not (request.user.is_doctor or request.user.is_secretary):
+            return Response(
+                {"error": "دسترسی غیرمجاز"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
-
-        response = HttpResponse(
-            output.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename="report.xlsx"'
-        return response
+        serializer = TransactionSerializer(transaction)
+        return Response(serializer.data)
 
 
-class ServiceManagerAPIView(APIView):
-    """مدیریت تعرفه خدمات"""
+class ServiceListAPIView(APIView):
+    """لیست خدمات"""
 
     def get(self, request):
         services = Service.objects.all()
-        return Response(ServiceSerializer(services, many=True).data)
+        serializer = ServiceSerializer(services, many=True)
+        return Response(serializer.data)
 
-    def post(self, request):
-        serializer = ServiceSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FinanceStatsAPIView(APIView):
+    """آمار مالی"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not (request.user.is_doctor or request.user.is_secretary):
+            return Response(
+                {"error": "دسترسی غیرمجاز"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        total_paid = Transaction.objects.filter(status='paid').aggregate(Sum('amount'))['amount__sum'] or 0
+        total_pending = Transaction.objects.filter(status='pending').aggregate(Sum('amount'))['amount__sum'] or 0
+        total_transactions = Transaction.objects.count()
+
+        return Response({
+            "total_paid": total_paid,
+            "total_pending": total_pending,
+            "total_transactions": total_transactions,
+            "average_transaction": total_paid // max(Transaction.objects.filter(status='paid').count(), 1)
+        })

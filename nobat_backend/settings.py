@@ -38,21 +38,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Third-party
+    'rest_framework',
+    'corsheaders',
+    'django_jalali',
 
-# اپلیکیشن‌های پروژه ما
+    # Local apps
     'users.apps.UsersConfig',
     'appointments.apps.AppointmentsConfig',
     'medical_records.apps.MedicalRecordsConfig',
     'consultations.apps.ConsultationsConfig',
     'finance.apps.FinanceConfig',
     'settings_config.apps.SettingsConfigConfig',
-
-
-# کتابخانه‌های جانبی (اگر نصب دارید)
-    'rest_framework',
-    'corsheaders',
-    'django_jalali',
-    'jalali_date',
 ]
 
 MIDDLEWARE = [
@@ -122,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
@@ -160,4 +157,13 @@ JALALI_DATE_DEFAULTS = {
         ],
         'css': dict(all=['admin/css/django_jalali.css'])
     },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
 }
